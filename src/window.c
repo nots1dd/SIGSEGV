@@ -1,4 +1,6 @@
 #include "window.h"
+#include "globals.h"
+#include "player.h"
 
 void initWindow(void) {
     int monitor = GetCurrentMonitor();
@@ -12,8 +14,10 @@ void initWindow(void) {
 
 void displayWindow(void) {
     while (!WindowShouldClose()) {
+        deltaTime = GetFrameTime();
         BeginDrawing();
         ClearBackground(RAYWHITE);
+        updatePlayer();
         EndDrawing();
     }
 }
