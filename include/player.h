@@ -1,8 +1,8 @@
 #pragma once
 
 typedef struct Player {
-    int x;
-    int y;
+    float x;
+    float y;
     int width;
     int height;
     float speed;
@@ -11,4 +11,5 @@ typedef struct Player {
 Player initPlayer(void);
 void displayPlayer(Player player);
 void handleMovement(Player* player);
+void handleGravity(Player* player);
 void updatePlayer(Player* player);

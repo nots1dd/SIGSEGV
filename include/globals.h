@@ -1,3 +1,4 @@
 #pragma once
 
-float deltaTime;
+extern float deltaTime;
+extern float gravity;

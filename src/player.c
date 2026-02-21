@@ -3,7 +3,7 @@
 #include "raylib.h"
 
 void displayPlayer(Player player) {
-    DrawRectangle(player.x, player.y, player.width, player.height, RED);
+    DrawRectangle((int)player.x, (int)player.y, player.width, player.height, RED);
 }
 
 void handleMovement(Player* player) {
@@ -15,15 +15,20 @@ void handleMovement(Player* player) {
     }
 }
 
+void handleGravity(Player* player) {
+    player->y += gravity * deltaTime;
+}
+
 void updatePlayer(Player* player) {
     handleMovement(player);
+    handleGravity(player);
     displayPlayer(*player);
 }
 
 Player initPlayer(void) {
     Player player;
-    player.x = 100;
-    player.y = 100;
+    player.x = 100.0f;
+    player.y = 100.0f;
     player.width = 100;
     player.height = 100;
     player.speed = 500.0f;
