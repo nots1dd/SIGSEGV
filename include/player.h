@@ -5,11 +5,16 @@ typedef struct Player {
     float y;
     int width;
     int height;
-    float speed;
+    float acceleration;
+    float velocityX;
+    float velocityY;
+    float maxSpeed;
+
 } Player;
 
 Player initPlayer(void);
 void displayPlayer(Player player);
+void handleInput(Player* player);
 void handleMovement(Player* player);
 void handleGravity(Player* player);
 void updatePlayer(Player* player);

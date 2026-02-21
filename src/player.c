@@ -6,12 +6,25 @@ void displayPlayer(Player player) {
     DrawRectangle((int)player.x, (int)player.y, player.width, player.height, RED);
 }
 
-void handleMovement(Player* player) {
+void handleInput(Player* player) {
     if (IsKeyDown(KEY_D)) {
-        player->x += player->speed * deltaTime;
+        player->velocityX += player->acceleration * deltaTime;
     }
     if (IsKeyDown(KEY_A)) {
-        player->x -= player->speed * deltaTime;
+        player->velocityX -= player->acceleration * deltaTime;
+    }
+}
+
+void handleMovement(Player* player) {
+    // Apply velocity to position
+    player->x += player->velocityX * deltaTime;
+    player->y += player->velocityY * deltaTime;
+
+    // Clamp velocity to max speed
+    if (player->velocityX > player->maxSpeed) {
+        player->velocityX = player->maxSpeed;
+    } else if (player->velocityX < -player->maxSpeed) {
+        player->velocityX = -player->maxSpeed;
     }
 }
 
@@ -20,6 +33,7 @@ void handleGravity(Player* player) {
 }
 
 void updatePlayer(Player* player) {
+    handleInput(player);
     handleMovement(player);
     handleGravity(player);
     displayPlayer(*player);
@@ -31,6 +45,9 @@ Player initPlayer(void) {
     player.y = 100.0f;
     player.width = 100;
     player.height = 100;
-    player.speed = 500.0f;
+    player.velocityX = 0.0f;
+    player.velocityY = 0.0f;
+    player.acceleration = 10.0f;
+    player.maxSpeed = 500.0f;
     return player;
 }
