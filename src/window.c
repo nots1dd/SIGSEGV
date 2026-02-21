@@ -13,11 +13,12 @@ void initWindow(void) {
 }
 
 void displayWindow(void) {
+    Player player = initPlayer();
     while (!WindowShouldClose()) {
         deltaTime = GetFrameTime();
         BeginDrawing();
         ClearBackground(RAYWHITE);
-        updatePlayer();
+        updatePlayer(&player);
         EndDrawing();
     }
 }

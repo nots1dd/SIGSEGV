@@ -2,16 +2,20 @@
 #include "globals.h"
 #include "raylib.h"
 
-#define PLAYER_SIZE 100 // Temporary player size, can be changed later
-
-void displayPlayer(void) {
-    DrawRectangle(GetScreenWidth() / 2, GetScreenHeight() /2, PLAYER_SIZE, PLAYER_SIZE, RED);
+void displayPlayer(Player player) {
+    DrawRectangle(player.x, player.y, player.width, player.height, RED);
 }
 
-void updatePlayer(void) {
-    displayPlayer();
+void updatePlayer(Player* player) {
+    displayPlayer(*player);
 }
 
-void initPlayer(void) {
-    // Initialize player properties here if needed
+Player initPlayer(void) {
+    Player player;
+    player.x = 100;
+    player.y = 100;
+    player.width = 50;
+    player.height = 50;
+    player.speed = 200.0f;
+    return player;
 }
