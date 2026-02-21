@@ -1,6 +1,7 @@
 #include "player.h"
 #include "globals.h"
 #include "raylib.h"
+#include "helpers.h"
 
 void displayPlayer(Player player) {
     DrawRectangle((int)player.x, (int)player.y, player.width, player.height, RED);
@@ -29,7 +30,12 @@ void handleMovement(Player* player) {
 }
 
 void handleGravity(Player* player) {
-    player->y += gravity * deltaTime;
+    if (player->y + player->height < GetScreenHeight()) { // Simple ground check
+        player->velocityY += gravity * deltaTime;
+    } else {
+        player->velocityY = 0.0f;
+        player->y = GetScreenHeight() - player->height; // Snap to ground
+    }
 }
 
 void updatePlayer(Player* player) {
