@@ -14,5 +14,8 @@ $(BUILD_DIR)/build.ninja:
 clean:
 	rm -rf $(BUILD_DIR)
 
+run:
+	$(BUILD_DIR)/SIGSEGV
+
 # Clean and rebuild from scratch
 build-clean: clean build
