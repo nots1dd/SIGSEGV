@@ -1,5 +1,6 @@
 BUILD_DIR := bin
 GENERATOR := Ninja
+VERSION := 3.28.3
 
 .PHONY: build build-clean clean configure
 
@@ -8,7 +9,7 @@ build: $(BUILD_DIR)/build.ninja
 
 # Configure only if not already configured
 $(BUILD_DIR)/build.ninja:
-	cmake -S . -B $(BUILD_DIR) -G $(GENERATOR)
+	cmake -S . -B $(BUILD_DIR) -G $(GENERATOR) -DCMAKE_POLICY_VERSION_MINIMUM=$(VERSION)
 
 # Remove build directory
 clean:

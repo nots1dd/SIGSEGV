@@ -13,7 +13,16 @@ void initWindow(void) {
 
 void displayWindow(void) {
     Player player = initPlayer();
-    Pillar pillar = initPillar();
+    
+    Pillars pillars;
+    initPillars(&pillars);
+    
+    // Add starting pillar
+    addPillar(&pillars, initPillar(850.0f, 850.0f, -200.0f, 500.0f));
+    
+    // Generate dynamic pillars
+    generatePillars(&pillars, 60);
+    
     Camera2D camera = {0};
     int monitor = GetCurrentMonitor();
     int screenWidth = GetMonitorWidth(monitor);
@@ -22,6 +31,7 @@ void displayWindow(void) {
     camera.offset = (Vector2){ screenWidth/2.0f, screenHeight/2.0f };
     camera.rotation = 0.0f;
     camera.zoom = 0.7f;
+    
     while (!WindowShouldClose()) {
         deltaTime = GetFrameTime();
         camera.target = (Vector2){player.x + player.width/2.0f, player.y + player.height/2.0f};
@@ -29,9 +39,13 @@ void displayWindow(void) {
         BeginDrawing();
         ClearBackground(RAYWHITE);
         BeginMode2D(camera);
-        updatePlayer(&player, &pillar);
-        displayPillar(&pillar);
+        
+        updatePlayer(&player, &pillars);
+        displayPillars(&pillars);
+        
         EndMode2D();
         EndDrawing();
     }
+    
+    freePillars(&pillars);
 }
