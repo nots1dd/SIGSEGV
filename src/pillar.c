@@ -28,27 +28,31 @@ void addPillar(Pillars* pillars, Pillar pillar) {
 
 void generatePillars(Pillars* pillars, int count) {
     for (int i = 0; i < count; i++) {
-        float width = (float)GetRandomValue(100, 300);
-        float height = (float)GetRandomValue(100, 500);
-        float x = (float)GetRandomValue(400, 10000);
-        float y = (float)GetScreenHeight() - (float)GetRandomValue(100, 700);
+        int attempts = 0;
         
-        Pillar newPillar = initPillar(width, height, x, y);
-        
-        bool collision = false;
-        for (size_t j = 0; j < pillars->count; j++) {
-            if (isColliding(newPillar.x, newPillar.y, newPillar.width, newPillar.height,
-                            pillars->items[j].x, pillars->items[j].y, 
-                            pillars->items[j].width, pillars->items[j].height)) {
-                collision = true;
+        while (attempts < 100) {
+            float width = (float)(GetRandomValue(600, 900));
+            float height = (float)(GetRandomValue(600, 700));
+            float x = (float)GetRandomValue(400, 50000); // Increased world size
+            float y = (float)GetScreenHeight() - height;
+            
+            Pillar newPillar = initPillar(width, height, x, y);
+            
+            bool collision = false;
+            for (size_t j = 0; j < pillars->count; j++) {
+                if (isColliding(newPillar.x, newPillar.y, newPillar.width, newPillar.height,
+                                pillars->items[j].x, pillars->items[j].y, 
+                                pillars->items[j].width, pillars->items[j].height)) {
+                    collision = true;
+                    break;
+                }
+            }
+            
+            if (!collision) {
+                addPillar(pillars, newPillar);
                 break;
             }
-        }
-        
-        if (!collision) {
-            addPillar(pillars, newPillar);
-        } else {
-            i--; // Retry
+            attempts++;
         }
     }
 }

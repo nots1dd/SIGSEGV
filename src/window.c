@@ -9,7 +9,6 @@ void initWindow(void) {
     int height  = GetMonitorHeight(monitor);
 
     InitWindow(width, height, "SIGSEGV");
-    SetTargetFPS(60);
 }
 
 void displayWindow(void) {
@@ -22,7 +21,7 @@ void displayWindow(void) {
     addPillar(&pillars, initPillar(850.0f, 850.0f, -200.0f, 500.0f));
     
     // Generate dynamic pillars
-    generatePillars(&pillars, 20);
+    generatePillars(&pillars, 60);
     
     Camera2D camera = {0};
     int monitor = GetCurrentMonitor();
