@@ -32,8 +32,8 @@ void generatePillars(Pillars* pillars, int count) {
         
         while (attempts < 100) {
             float width = (float)(GetRandomValue(600, 900));
-            float height = (float)(GetRandomValue(600, 700));
-            float x = (float)GetRandomValue(400, 50000); // Increased world size
+            float height = (float)(GetRandomValue(600, 800));
+            float x = (float)GetRandomValue(400, 50000);
             float y = (float)GetScreenHeight() - height;
             
             Pillar newPillar = initPillar(width, height, x, y);
