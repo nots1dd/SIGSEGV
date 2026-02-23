@@ -12,8 +12,8 @@ Enemy initEnemy(float x, float y, float speed, int width, int height, int type, 
     enemy.speed = speed;
     enemy.width = width;
     enemy.height = height;
-    enemy.type = type;
     enemy.id = id;
+    enemy.type = type;
     return enemy;
 }
 
@@ -32,11 +32,11 @@ void addEnemy(Enemies* enemies, Enemy enemy) {
 }
 
 void generateEnemies(Enemies* enemies, Pillars* pillars) {
+    int totalSpawns = 0;
     for (size_t i = 0; i < pillars->count; i++) {
         float randomChance = (float)GetRandomValue(0, 100) / 100.0f;
         
-        // If the random chance is greater than 0.25, skip spawning an enemy
-        if (randomChance > 0.25f) {
+        if (randomChance > 0.35f) {
             continue;
         }
 
@@ -45,15 +45,15 @@ void generateEnemies(Enemies* enemies, Pillars* pillars) {
             (int)(pillars->items[i].x + pillars->items[i].width - 50)
         );
 
-        float y = pillars->items[i].y - 50;
-
+        float y = pillars->items[i].y - 50.0f; 
         int type = GetRandomValue(0, 1);
-
         float speed = (type == 0) ? 100.0f : 150.0f;
 
         Enemy newEnemy = initEnemy(x, y, speed, 50, 50, type, i);
         addEnemy(enemies, newEnemy);
+        totalSpawns++;
     }
+    printf("DEBUG: Generated %d enemies on %zu pillars\n", totalSpawns, pillars->count);
 }
 
 void displayEnemies(Enemies* enemies) {
@@ -76,33 +76,12 @@ void freeEnemies(Enemies* enemies) {
 void freeEnemy(Enemies *enemies, int id) {
     for (size_t i = 0; i < enemies->count; i++) {
         if (enemies->items[i].id == id) {
-            // Swap the enemy to be removed with the last enemy
             enemies->items[i] = enemies->items[enemies->count - 1];
             enemies->count--;
-            enemies->items = realloc(enemies->items, sizeof(Enemy) * enemies->count);
-            
-            // If realloc fails, handle memory allocation failure
-            if (enemies->items == NULL && enemies->count > 0) {
-                fprintf(stderr, "Memory allocation failed!\n");
-                exit(1);
-            }
-            break;
-        }
-    }
-}
-
-void handleEnemyGravity(Enemy* enemy) {
-    enemy->y += gravity * deltaTime;
-}
-
-void handleEnemyCollisions(Enemy* enemy, Pillars* pillars) {
-    for (size_t i = 0; i < pillars->count; i++) {
-        Pillar* p = &pillars->items[i];
-        if (isColliding(enemy->x, enemy->y, enemy->width, enemy->height, p->x, p->y, p->width, p->height)) {
-            if (enemy->y + enemy->height <= p->y + 10.0f) {
-                enemy->y = p->y - (float)enemy->height;
-            } else {
-                enemy->y = p->y + (float)p->height;
+            if (enemies->count == 0) {
+                free(enemies->items);
+                enemies->items = NULL;
+                enemies->capacity = 0;
             }
             break;
         }
@@ -110,9 +89,7 @@ void handleEnemyCollisions(Enemy* enemy, Pillars* pillars) {
 }
 
 void updateEnemies(Enemies *enemies, Pillars *pillars) {
-    for (size_t i = 0; i < enemies->count; i++) {
-        Enemy* e = &enemies->items[i];
-        handleEnemyGravity(e);
-        handleEnemyCollisions(e, pillars);
-    }
+    // TODO: Implement enemy movement
+    (void)enemies;
+    (void)pillars;
 }

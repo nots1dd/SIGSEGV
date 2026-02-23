@@ -1,5 +1,6 @@
 #pragma once
 #include <stdlib.h>
+#include <stdbool.h>
 #include "pillar.h"
 #include "player.h"
 
@@ -27,6 +28,4 @@ void displayEnemies(Enemies* enemies);
 void freeEnemies(Enemies* enemies);
 void freeEnemy(Enemies* enemies, int id);
 
-void handleEnemyGravity(Enemy* enemy);
-void handleEnemyCollisions(Enemy* enemy, Pillars* pillars);
 void updateEnemies(Enemies* enemies, Pillars* pillars);
