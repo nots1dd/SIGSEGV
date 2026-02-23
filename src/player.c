@@ -9,46 +9,34 @@ void displayPlayer(Player player) {
 
 void handleMovement(Player* player) {
     if (IsKeyDown(KEY_D)) {
-        if (player->velocityX < 0.0f) {
-            player->velocityX = 0.0f;
-        }
+        if (player->velocityX < 0.0f) player->velocityX = 0.0f;
         player->velocityX += player->acceleration * deltaTime;
     }
     else if (IsKeyDown(KEY_A)) {
-        if (player->velocityX > 0.0f) {
-            player->velocityX = 0.0f;
-        }
+        if (player->velocityX > 0.0f) player->velocityX = 0.0f;
         player->velocityX -= player->acceleration * deltaTime;
     }
     else {
         if (player->velocityX > 0.0f) {
             player->velocityX -= player->friction * deltaTime;
-            if (player->velocityX < 0.0f) {
-                player->velocityX = 0.0f;
-            }
+            if (player->velocityX < 0.0f) player->velocityX = 0.0f;
         }
         else if (player->velocityX < 0.0f) {
             player->velocityX += player->friction * deltaTime;
-            if (player->velocityX > 0.0f) {
-                player->velocityX = 0.0f;
-            }
+            if (player->velocityX > 0.0f) player->velocityX = 0.0f;
         }
     }
 
-    if (player->velocityX > player->maxSpeed) {
-        player->velocityX = player->maxSpeed;
-    }
-    if (player->velocityX < -player->maxSpeed) {
-        player->velocityX = -player->maxSpeed;
-    }
+    if (player->velocityX > player->maxSpeed) player->velocityX = player->maxSpeed;
+    if (player->velocityX < -player->maxSpeed) player->velocityX = -player->maxSpeed;
 }
 
 void handleCollisions(Player* player, Pillar* pillar) {
     player->isGrounded = false;
+    float buffer = 10.0f;
 
     player->x += player->velocityX * deltaTime;
     
-    // Resolve X obstacles
     if (isColliding(player->x, player->y, player->width, player->height, pillar->x, pillar->y, pillar->width, pillar->height)) {
         if (player->velocityX > 0.0f) {
             player->x = pillar->x - player->width;
@@ -58,7 +46,6 @@ void handleCollisions(Player* player, Pillar* pillar) {
         player->velocityX = 0.0f;
     }
 
-    // Screen bounds X
     if (player->x < 0.0f) {
         player->x = 0.0f;
         player->velocityX = 0.0f;
@@ -70,24 +57,27 @@ void handleCollisions(Player* player, Pillar* pillar) {
 
     player->y += player->velocityY * deltaTime;
 
-    // Resolve Y obstacles
     if (isColliding(player->x, player->y, player->width, player->height, pillar->x, pillar->y, pillar->width, pillar->height)) {
-        if (player->velocityY > 0.0f) {
-            player->y = pillar->y - player->height;
+        if (player->velocityY >= 0.0f) {
+            player->y = pillar->y - (float)player->height;
             player->isGrounded = true;
         } else if (player->velocityY < 0.0f) {
-            player->y = pillar->y + pillar->height;
+            player->y = pillar->y + (float)pillar->height;
         }
         player->velocityY = 0.0f;
     }
 
-    // Screen bounds Y (Ground)
-    float groundY = (float)GetScreenHeight() - player->height;
-    if (player->y > groundY) {
+    if (!player->isGrounded && isColliding(player->x, player->y + buffer, player->width, player->height, pillar->x, pillar->y, pillar->width, pillar->height)) {
+        player->isGrounded = true;
+    }
+
+    float groundY = (float)GetScreenHeight() - (float)player->height;
+    if (player->y >= groundY - buffer) {
         player->y = groundY;
         player->velocityY = 0.0f;
         player->isGrounded = true;
     }
+
     if (player->y < 0.0f) {
         player->y = 0.0f;
         player->velocityY = 0.0f;
@@ -129,5 +119,6 @@ Player initPlayer(void) {
     player.friction = 1500.0f;
     player.maxSpeed = 600.0f;
     player.jumpStrength = 600.0f;
+    player.isGrounded = false;
     return player;
 }
