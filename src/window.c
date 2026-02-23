@@ -46,13 +46,15 @@ void displayWindow(void) {
         BeginMode2D(camera);
         
         updatePlayer(&player, &pillars);
+        updateEnemies(&enemies, &pillars);
          
         displayEnemies(&enemies);
         displayPillars(&pillars);
         
         EndMode2D();
         EndDrawing();
-    }
-    
+    } 
+    freeEnemies(&enemies);
     freePillars(&pillars);
+    
 }

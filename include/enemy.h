@@ -1,6 +1,7 @@
 #pragma once
 #include <stdlib.h>
 #include "pillar.h"
+#include "player.h"
 
 typedef struct Enemy {
     float x;
@@ -23,4 +24,9 @@ void initEnemies(Enemies* enemies);
 void addEnemy(Enemies* enemies, Enemy enemy);
 void generateEnemies(Enemies* enemies, Pillars* pillars);
 void displayEnemies(Enemies* enemies);
+void freeEnemies(Enemies* enemies);
 void freeEnemy(Enemies* enemies, int id);
+
+void handleEnemyGravity(Enemy* enemy);
+void handleEnemyCollisions(Enemy* enemy, Pillars* pillars);
+void updateEnemies(Enemies* enemies, Pillars* pillars);

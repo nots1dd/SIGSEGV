@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include "helpers.h"
 #include "pillar.h"
+#include "globals.h"
 #include <stdio.h>
 
 Enemy initEnemy(float x, float y, float speed, int width, int height, int type, int id) {
@@ -63,6 +64,15 @@ void displayEnemies(Enemies* enemies) {
     }
 }
 
+void freeEnemies(Enemies* enemies) {
+    if (enemies->items) {
+        free(enemies->items);
+        enemies->items = NULL;
+    }
+    enemies->count = 0;
+    enemies->capacity = 0;
+}
+
 void freeEnemy(Enemies *enemies, int id) {
     for (size_t i = 0; i < enemies->count; i++) {
         if (enemies->items[i].id == id) {
@@ -78,5 +88,31 @@ void freeEnemy(Enemies *enemies, int id) {
             }
             break;
         }
+    }
+}
+
+void handleEnemyGravity(Enemy* enemy) {
+    enemy->y += gravity * deltaTime;
+}
+
+void handleEnemyCollisions(Enemy* enemy, Pillars* pillars) {
+    for (size_t i = 0; i < pillars->count; i++) {
+        Pillar* p = &pillars->items[i];
+        if (isColliding(enemy->x, enemy->y, enemy->width, enemy->height, p->x, p->y, p->width, p->height)) {
+            if (enemy->y + enemy->height <= p->y + 10.0f) {
+                enemy->y = p->y - (float)enemy->height;
+            } else {
+                enemy->y = p->y + (float)p->height;
+            }
+            break;
+        }
+    }
+}
+
+void updateEnemies(Enemies *enemies, Pillars *pillars) {
+    for (size_t i = 0; i < enemies->count; i++) {
+        Enemy* e = &enemies->items[i];
+        handleEnemyGravity(e);
+        handleEnemyCollisions(e, pillars);
     }
 }

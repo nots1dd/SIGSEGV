@@ -21,7 +21,7 @@ typedef struct Player {
 Player initPlayer(void);
 void displayPlayer(Player player);
 void handleMovement(Player* player);
-void handleCollisions(Player* player, Pillars* pillars);
+void handlePlayerCollisions(Player* player, Pillars* pillars);
 void handleJump(Player* player);
-void handleGravity(Player* player);
+void handlePlayerGravity(Player* player);
 void updatePlayer(Player* player, Pillars* pillars);
