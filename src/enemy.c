@@ -32,6 +32,12 @@ void addEnemy(Enemies* enemies, Enemy enemy) {
 
 void generateEnemies(Enemies* enemies, Pillars* pillars) {
     for (size_t i = 0; i < pillars->count; i++) {
+        float randomChance = (float)GetRandomValue(0, 100) / 100.0f;
+        
+        // If the random chance is greater than 0.25, skip spawning an enemy
+        if (randomChance > 0.25f) {
+            continue;
+        }
 
         float x = (float)GetRandomValue(
             (int)pillars->items[i].x,
@@ -45,7 +51,6 @@ void generateEnemies(Enemies* enemies, Pillars* pillars) {
         float speed = (type == 0) ? 100.0f : 150.0f;
 
         Enemy newEnemy = initEnemy(x, y, speed, 50, 50, type, i);
-
         addEnemy(enemies, newEnemy);
     }
 }
