@@ -1,12 +1,12 @@
 #include "pillar.h"
 #include "raylib.h"
 
-Pillar initPillar(void) {
+Pillar initPillar(float width, float height, float x, float y) {
     Pillar pillar;
-    pillar.width = 200;
-    pillar.height = 200;
-    pillar.x = 500.0f;
-    pillar.y = 900.0f;
+    pillar.width = width;
+    pillar.height = height;
+    pillar.x = x;
+    pillar.y = y;
     return pillar;
 }
 

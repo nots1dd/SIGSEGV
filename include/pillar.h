@@ -7,6 +7,6 @@ typedef struct Pillar {
     float y;
 } Pillar;
 
-extern Pillar initPillar(void);
+extern Pillar initPillar(float width, float height, float x, float y);
 extern void displayPillar(Pillar* pillar);
 
