@@ -9,7 +9,6 @@ void initWindow(void) {
     int height  = GetMonitorHeight(monitor);
 
     InitWindow(width, height, "SIGSEGV");
-    SetTargetFPS(60);
 }
 
 void displayWindow(void) {
