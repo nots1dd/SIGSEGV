@@ -42,29 +42,34 @@ void addEnemy(Enemies* enemies, Enemy enemy) {
 void generateEnemies(Enemies* enemies, Pillars* pillars) {
     int totalSpawns = 0;
     for (size_t i = 0; i < pillars->count; i++) {
-        float randomChance = (float)GetRandomValue(0, 100) / 100.0f;
-        
-        if (randomChance > 0.35f) {
-            continue;
+        if (i >= 2) { // Start spawning enemies after the first few pillars to give player some breathing room
+            float randomChance = (float)GetRandomValue(0, 100) / 100.0f;
+            
+            if (randomChance > 0.40f) { // 60% chance to spawn an enemy on this pillar
+                continue;
+            }
+
+            float x = (float)GetRandomValue(
+                (int)pillars->items[i].x,
+                (int)(pillars->items[i].x + pillars->items[i].width - 50)
+            );
+
+            float y = pillars->items[i].y - 100.0f; 
+            int type = GetRandomValue(0, 1);
+            
+            // Basic stats for AI
+            float acceleration = 2500.0f;
+            float maxSpeed = 300.0f;
+            int agroWidth = 1600; // Wide enough to cover most of the screen horizontally, but not too wide to be unfair
+            int agroHeight = 800;
+
+            Enemy newEnemy = initEnemy(x, y, 100.0f, 50, 50, type, i, agroWidth, agroHeight, false, acceleration, maxSpeed);
+            addEnemy(enemies, newEnemy);
+            totalSpawns++;
+        } else {
+            // Debug: Log that we're skipping enemy spawn for this pillar
+            printf("DEBUG: Skipping enemy spawn for pillar %zu at x=%.2f due to initial safe zone\n", i, pillars->items[i].x);
         }
-
-        float x = (float)GetRandomValue(
-            (int)pillars->items[i].x,
-            (int)(pillars->items[i].x + pillars->items[i].width - 50)
-        );
-
-        float y = pillars->items[i].y - 100.0f; 
-        int type = GetRandomValue(0, 1);
-        
-        // Basic stats for AI
-        float acceleration = 2500.0f;
-        float maxSpeed = 300.0f;
-        int agroWidth = 800;
-        int agroHeight = 400;
-
-        Enemy newEnemy = initEnemy(x, y, 100.0f, 50, 50, type, i, agroWidth, agroHeight, false, acceleration, maxSpeed);
-        addEnemy(enemies, newEnemy);
-        totalSpawns++;
     }
     printf("DEBUG: Generated %d enemies on %zu pillars\n", totalSpawns, pillars->count);
 }

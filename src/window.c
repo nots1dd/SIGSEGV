@@ -23,7 +23,6 @@ void displayWindow(void) {
     // Add starting pillar
     addPillar(&pillars, initPillar(850.0f, 850.0f, -200.0f, 500.0f));
     
-    // Generate dynamic pillars
     generatePillars(&pillars, 60);
     
     generateEnemies(&enemies, &pillars);
