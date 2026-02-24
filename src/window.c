@@ -3,11 +3,15 @@
 #include "player.h"
 #include "pillar.h"
 #include "enemy.h"
+#include <assert.h>
 
 void initWindow(void) {
     int monitor = GetCurrentMonitor();
     int width   = GetMonitorWidth(monitor);
     int height  = GetMonitorHeight(monitor);
+
+    if (width <= 0) width = 1600;
+    if (height <= 0) height = 900;
 
     InitWindow(width, height, "SIGSEGV");
 }
