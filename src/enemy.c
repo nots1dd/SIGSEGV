@@ -114,36 +114,40 @@ void enemyJump(Enemy *enemy) {
 }
 
 void moveEnemyTowardsPlayer(Enemy* enemy, Player* player) {
-    // Center of enemy and agro box
-    float cx = enemy->x + enemy->width / 2.0f;
-    float cy = enemy->y + enemy->height / 2.0f;
-    float agroX = cx - enemy->agroRangeBoxWidth / 2.0f;
-    float agroY = cy - enemy->agroRangeBoxHeight / 2.0f;
+    if (enemy->type == 0) { // MELEE
+        float cx = enemy->x + enemy->width / 2.0f;
+        float cy = enemy->y + enemy->height / 2.0f;
+        float agroX = cx - enemy->agroRangeBoxWidth / 2.0f;
+        float agroY = cy - enemy->agroRangeBoxHeight / 2.0f;
 
-    if (isColliding(agroX, agroY, enemy->agroRangeBoxWidth, enemy->agroRangeBoxHeight,
-                    player->x, player->y, player->width, player->height)) {
-        
-        // Simple chase logic
-        if (player->x < enemy->x) {
-            enemy->velocityX -= enemy->acceleration * deltaTime;
-        } else if (player->x > enemy->x) {
-            enemy->velocityX += enemy->acceleration * deltaTime;
-        }
+        if (isColliding(agroX, agroY, enemy->agroRangeBoxWidth, enemy->agroRangeBoxHeight,
+                        player->x, player->y, player->width, player->height)) {
+            
+            // Simple chase logic
+            if (player->x < enemy->x) {
+                enemy->velocityX -= enemy->acceleration * deltaTime;
+            } else if (player->x > enemy->x) {
+                enemy->velocityX += enemy->acceleration * deltaTime;
+            }
 
-        // Jump if player is significantly higher
-        if (player->y < enemy->y - 50.0f && enemy->isGrounded) {
-            enemyJump(enemy);
+            // Jump if player is significantly higher
+            if (player->y < enemy->y - 50.0f && enemy->isGrounded) {
+                enemyJump(enemy);
+            }
+            
+            // Clamp speed
+            if (enemy->velocityX > enemy->maxSpeed) enemy->velocityX = enemy->maxSpeed;
+            if (enemy->velocityX < -enemy->maxSpeed) enemy->velocityX = -enemy->maxSpeed;
+        } else {
+            // Friction when not chasing
+            enemy->velocityX *= 0.9f;
+            if (fabsf(enemy->velocityX) < 1.0f) enemy->velocityX = 0.0f;
         }
-        
-        // Clamp speed
-        if (enemy->velocityX > enemy->maxSpeed) enemy->velocityX = enemy->maxSpeed;
-        if (enemy->velocityX < -enemy->maxSpeed) enemy->velocityX = -enemy->maxSpeed;
-    } else {
-        // Friction when not chasing
-        enemy->velocityX *= 0.9f;
-        if (fabsf(enemy->velocityX) < 1.0f) enemy->velocityX = 0.0f;
+    } else if (enemy->type == 1) { // RANGED
+        // Ranged enemy behavior can be implemented here (e.g., shooting projectiles)
+        // For now, they will just stand still and not chase the player
     }
-}
+}   
 
 void handleEnemyGravity(Enemy* enemy) {
     if (!enemy->isGrounded) {
