@@ -6,6 +6,11 @@
 #include <stdio.h>
 #include <math.h>
 
+// Legit has to be the worst code i have ever written
+// If i would need to write a std::vector implemntation one more time i will snap
+// Dont even get me started on typedef structs they are the devil
+// Kids dont learn C learn C++
+
 Enemy initEnemy(float x, float y, float speed, int width, int height, int type, int id, int agroRangeBoxWidth, int agroRangeBoxHeight, bool isGrounded, float acceleration, float maxSpeed) {
     Enemy enemy;
     enemy.x = x;
@@ -17,6 +22,7 @@ Enemy initEnemy(float x, float y, float speed, int width, int height, int type, 
     enemy.height = height;
     enemy.id = id;
     enemy.type = type;
+
     if (type == 0) { // MELEE
         enemy.agroRangeBoxWidth = agroRangeBoxWidth;
         enemy.agroRangeBoxHeight = agroRangeBoxHeight;
@@ -24,8 +30,7 @@ Enemy initEnemy(float x, float y, float speed, int width, int height, int type, 
         enemy.agroRangeBoxWidth = agroRangeBoxWidth * 1.5f; // Ranged enemies have larger agro range
         enemy.agroRangeBoxHeight = agroRangeBoxHeight * 1.5f;
     }
-    enemy.agroRangeBoxWidth = agroRangeBoxWidth;
-    enemy.agroRangeBoxHeight = agroRangeBoxHeight;
+
     enemy.isGrounded = isGrounded;
     enemy.acceleration = acceleration;
     enemy.maxSpeed = maxSpeed;
@@ -65,10 +70,22 @@ void generateEnemies(Enemies* enemies, Pillars* pillars) {
             int type = GetRandomValue(0, 1);
             
             // Basic stats for AI
-            float acceleration = 2500.0f;
-            float maxSpeed = 300.0f;
-            int agroWidth = 2400; // Wide enough to cover most of the screen horizontally, but not too wide to be unfair
-            int agroHeight = 1600; // Tall enough to cover vertical space, but not too tall to be unfair
+            float acceleration = 0.0f;
+            float maxSpeed = 0.0f;
+            int agroWidth = 0;
+            int agroHeight = 0;
+
+            if (type == 0) { // MELEE
+                acceleration = 2500.0f;
+                maxSpeed = 600.0f;
+                agroWidth = 2400; // Wide enough to cover most of the screen horizontally, but not too wide to be unfair
+                agroHeight = 1600; // Tall enough to cover vertical space, but not too tall to be unfair
+            } else if (type == 1) { // RANGED
+                acceleration = 2000.0f;
+                maxSpeed = 400.0f;
+                agroWidth = 3000; // Ranged enemies have larger agro range to compensate for not chasing as aggressively
+                agroHeight = 2000;
+            }
 
             Enemy newEnemy = initEnemy(x, y, 100.0f, 50, 50, type, i, agroWidth, agroHeight, false, acceleration, maxSpeed);
             addEnemy(enemies, newEnemy);
@@ -169,7 +186,7 @@ void moveEnemyTowardsPlayer(Enemy* enemy, Player* player, Pillars* pillars) {
         }
 
         // Jump if player is significantly higher and we are grounded
-        if (player->y < enemy->y - 50.0f && enemy->isGrounded) {
+        if (player->y < enemy->y + 200.0f && enemy->isGrounded) {
             enemyJump(enemy);
         }
         
@@ -194,31 +211,58 @@ void moveEnemyTowardsPlayer(Enemy* enemy, Player* player, Pillars* pillars) {
         }
     }
 
-    // Prevent enmies from walking off edges and getting stuck between pillars
+    // Robust Ledge Avoidance
+    // This shit should be trademarked by me (The name)
     if (enemy->isGrounded) {
-        float nextX = enemy->x + enemy->velocityX * deltaTime;
-        bool willBeGrounded = false;
-        for (size_t i = 0; i < pillars->count; i++) {
-            Pillar* p = &pillars->items[i];
-            if (isColliding(nextX, enemy->y + 1.0f, enemy->width, enemy->height, p->x, p->y, p->width, p->height)) {
-                willBeGrounded = true;
-                break;
-            }
-        }
-        if (!willBeGrounded) {
-            enemyJump(enemy);
-        } else {
-            // A very dumb way to prevent them from getting stuck in between pillars
+        float probeDist = 15.0f; // Check 15px ahead
+        float direction = (enemy->velocityX > 0.0f) ? 1.0f : (enemy->velocityX < 0.0f ? -1.0f : 0.0f);
+        
+        if (direction != 0.0f) {
+            float probeX = enemy->x + (enemy->width / 2.0f) + (direction * (enemy->width / 2.0f + probeDist));
+            float probeY = enemy->y + (float)enemy->height + 5.0f; // Just below feet
+            
+            bool groundAhead = false;
             for (size_t i = 0; i < pillars->count; i++) {
                 Pillar* p = &pillars->items[i];
-                if (isColliding(nextX, enemy->y, enemy->width, enemy->height, p->x, p->y, p->width, p->height)) {
-                    if (enemy->velocityX > 0.0f) {
-                        enemy->x = p->x - enemy->width;
-                    } else if (enemy->velocityX < 0.0f) {
-                        enemy->x = p->x + p->width;
-                    }
-                    enemy->velocityX = 0.0f;
+                if (probeX >= p->x && probeX <= p->x + p->width &&
+                    probeY >= p->y && probeY <= p->y + p->height) {
+                    groundAhead = true;
                     break;
+                }
+            }
+
+            if (!groundAhead) {
+                bool targetFound = false;
+                float jumpTargetRelativeX = direction * 500.0f; // Maximum jump look-ahead
+                
+                for (size_t i = 0; i < pillars->count; i++) {
+                    Pillar* p = &pillars->items[i];
+                    // Check if there's a pillar at our height or slightly lower within jump range
+                    if (enemy->x + jumpTargetRelativeX >= p->x && enemy->x + jumpTargetRelativeX <= p->x + p->width &&
+                        enemy->y + enemy->height >= p->y - 100.0f && enemy->y + enemy->height <= p->y + 500.0f) {
+                        targetFound = true;
+                        break;
+                    }
+                }
+
+                if (targetFound) {
+                    enemyJump(enemy);
+                } else {
+                    // VOID AHEAD. HARD STOP.
+                    enemy->velocityX = 0.0f;
+                    
+                    // Snap to the absolute edge of the current pillar to prevent "hanging"
+                    for (size_t i = 0; i < pillars->count; i++) {
+                        Pillar* p = &pillars->items[i];
+                        if (isColliding(enemy->x, enemy->y + 1.0f, enemy->width, enemy->height, p->x, p->y, p->width, p->height)) {
+                            if (direction > 0.0f) {
+                                enemy->x = p->x + p->width - (float)enemy->width;
+                            } else {
+                                enemy->x = p->x;
+                            }
+                            break;
+                        }
+                    }
                 }
             }
         }
