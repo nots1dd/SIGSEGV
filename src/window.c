@@ -2,6 +2,7 @@
 #include "globals.h"
 #include "player.h"
 #include "pillar.h"
+#include "enemy.h"
 
 void initWindow(void) {
     int monitor = GetCurrentMonitor();
@@ -16,12 +17,15 @@ void displayWindow(void) {
     
     Pillars pillars;
     initPillars(&pillars);
+    Enemies enemies;
+    initEnemies(&enemies);
     
     // Add starting pillar
     addPillar(&pillars, initPillar(850.0f, 850.0f, -200.0f, 500.0f));
     
-    // Generate dynamic pillars
     generatePillars(&pillars, 60);
+    
+    generateEnemies(&enemies, &pillars);
     
     Camera2D camera = {0};
     int monitor = GetCurrentMonitor();
@@ -41,11 +45,15 @@ void displayWindow(void) {
         BeginMode2D(camera);
         
         updatePlayer(&player, &pillars);
+        updateEnemies(&enemies, &pillars, &player);
+         
+        displayEnemies(&enemies);
         displayPillars(&pillars);
         
         EndMode2D();
         EndDrawing();
-    }
-    
+    } 
+    freeEnemies(&enemies);
     freePillars(&pillars);
+    
 }

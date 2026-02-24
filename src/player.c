@@ -30,7 +30,7 @@ void handleMovement(Player* player) {
     if (player->velocityX < -player->maxSpeed) player->velocityX = -player->maxSpeed;
 }
 
-void handleCollisions(Player* player, Pillars* pillars) {
+void handlePlayerCollisions(Player* player, Pillars* pillars) {
     player->isGrounded = false;
     float buffer = 10.0f;
 
@@ -91,17 +91,17 @@ void handleJump(Player* player) {
     }
 }
 
-void handleGravity(Player* player) {
+void handlePlayerGravity(Player* player) {
     if (!player->isGrounded) {
         player->velocityY += gravity * deltaTime;
     }
 }
 
 void updatePlayer(Player* player, Pillars* pillars) {
-    handleCollisions(player, pillars);
+    handlePlayerCollisions(player, pillars);
     handleMovement(player);
     handleJump(player);
-    handleGravity(player);
+    handlePlayerGravity(player);
     displayPlayer(*player);
 }
 

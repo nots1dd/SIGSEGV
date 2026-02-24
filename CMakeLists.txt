@@ -26,6 +26,7 @@ add_executable(${PROJECT_NAME}
     src/pillar.c
     src/globals.c
     src/helpers.c
+    src/enemy.c
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
