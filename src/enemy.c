@@ -17,6 +17,13 @@ Enemy initEnemy(float x, float y, float speed, int width, int height, int type, 
     enemy.height = height;
     enemy.id = id;
     enemy.type = type;
+    if (type == 0) { // MELEE
+        enemy.agroRangeBoxWidth = agroRangeBoxWidth;
+        enemy.agroRangeBoxHeight = agroRangeBoxHeight;
+    } else if (type == 1) { // RANGED
+        enemy.agroRangeBoxWidth = agroRangeBoxWidth * 1.5f; // Ranged enemies have larger agro range
+        enemy.agroRangeBoxHeight = agroRangeBoxHeight * 1.5f;
+    }
     enemy.agroRangeBoxWidth = agroRangeBoxWidth;
     enemy.agroRangeBoxHeight = agroRangeBoxHeight;
     enemy.isGrounded = isGrounded;
@@ -60,8 +67,8 @@ void generateEnemies(Enemies* enemies, Pillars* pillars) {
             // Basic stats for AI
             float acceleration = 2500.0f;
             float maxSpeed = 300.0f;
-            int agroWidth = 1600; // Wide enough to cover most of the screen horizontally, but not too wide to be unfair
-            int agroHeight = 800;
+            int agroWidth = 2400; // Wide enough to cover most of the screen horizontally, but not too wide to be unfair
+            int agroHeight = 1600; // Tall enough to cover vertical space, but not too tall to be unfair
 
             Enemy newEnemy = initEnemy(x, y, 100.0f, 50, 50, type, i, agroWidth, agroHeight, false, acceleration, maxSpeed);
             addEnemy(enemies, newEnemy);
@@ -114,40 +121,68 @@ void enemyJump(Enemy *enemy) {
 }
 
 void moveEnemyTowardsPlayer(Enemy* enemy, Player* player) {
-    if (enemy->type == 0) { // MELEE
-        float cx = enemy->x + enemy->width / 2.0f;
-        float cy = enemy->y + enemy->height / 2.0f;
-        float agroX = cx - enemy->agroRangeBoxWidth / 2.0f;
-        float agroY = cy - enemy->agroRangeBoxHeight / 2.0f;
+    // Center of enemy and agro box
+    float cx = enemy->x + enemy->width / 2.0f;
+    float cy = enemy->y + enemy->height / 2.0f;
+    float agroX = cx - enemy->agroRangeBoxWidth / 2.0f;
+    float agroY = cy - enemy->agroRangeBoxHeight / 2.0f;
 
-        if (isColliding(agroX, agroY, enemy->agroRangeBoxWidth, enemy->agroRangeBoxHeight,
-                        player->x, player->y, player->width, player->height)) {
+    // Check full agro box
+    if (isColliding(agroX, agroY, enemy->agroRangeBoxWidth, enemy->agroRangeBoxHeight,
+                    player->x, player->y, player->width, player->height)) {
+        
+        bool flee = false;
+        
+        // Ranged enemies flee if player is in the inner 50% of the agro box
+        if (enemy->type == RANGED) {
+            float innerWidth = enemy->agroRangeBoxWidth * 0.5f;
+            float innerHeight = enemy->agroRangeBoxHeight * 0.5f;
+            float innerX = cx - innerWidth / 2.0f;
+            float innerY = cy - innerHeight / 2.0f;
             
-            // Simple chase logic
+            if (isColliding(innerX, innerY, (int)innerWidth, (int)innerHeight,
+                            player->x, player->y, player->width, player->height)) {
+                flee = true;
+            }
+        }
+
+        // Apply movement
+        if (enemy->type == MELEE) {
+            // Melee ALWAYS chases within agro box
             if (player->x < enemy->x) {
                 enemy->velocityX -= enemy->acceleration * deltaTime;
             } else if (player->x > enemy->x) {
                 enemy->velocityX += enemy->acceleration * deltaTime;
             }
-
-            // Jump if player is significantly higher
-            if (player->y < enemy->y - 50.0f && enemy->isGrounded) {
-                enemyJump(enemy);
+        } else if (enemy->type == RANGED) {
+            if (flee) {
+                // Ranged flees within inner agro box
+                if (player->x < enemy->x) {
+                    enemy->velocityX += enemy->acceleration * deltaTime;
+                } else if (player->x > enemy->x) {
+                    enemy->velocityX -= enemy->acceleration * deltaTime;
+                }
+            } else {
+                // Ranged stays still / "don't fight"
+                enemy->velocityX *= 0.9f;
             }
-            
-            // Clamp speed
-            if (enemy->velocityX > enemy->maxSpeed) enemy->velocityX = enemy->maxSpeed;
-            if (enemy->velocityX < -enemy->maxSpeed) enemy->velocityX = -enemy->maxSpeed;
-        } else {
-            // Friction when not chasing
-            enemy->velocityX *= 0.9f;
-            if (fabsf(enemy->velocityX) < 1.0f) enemy->velocityX = 0.0f;
         }
-    } else if (enemy->type == 1) { // RANGED
-        // Ranged enemy behavior can be implemented here (e.g., shooting projectiles)
-        // For now, they will just stand still and not chase the player
+
+        // Jump if player is significantly higher and we are grounded
+        if (player->y < enemy->y - 50.0f && enemy->isGrounded) {
+            enemyJump(enemy);
+        }
+        
+        // Clamp speed
+        if (enemy->velocityX > enemy->maxSpeed) enemy->velocityX = enemy->maxSpeed;
+        if (enemy->velocityX < -enemy->maxSpeed) enemy->velocityX = -enemy->maxSpeed;
+    } else {
+        // Friction when not chased
+        enemy->velocityX *= 0.9f;
+        if (fabsf(enemy->velocityX) < 1.0f) enemy->velocityX = 0.0f;
     }
-}   
+}
+   
 
 void handleEnemyGravity(Enemy* enemy) {
     if (!enemy->isGrounded) {
