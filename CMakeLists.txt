@@ -9,6 +9,14 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 include(FetchContent)
 
+FetchContent_Declare(
+    raylib
+    GIT_REPOSITORY https://github.com/raysan5/raylib.git
+    GIT_TAG 5.0
+)
+
+FetchContent_MakeAvailable(raylib)
+
 set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_GAMES OFF CACHE BOOL "" FORCE)
 
