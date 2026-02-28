@@ -11,7 +11,7 @@
 // Dont even get me started on typedef structs they are the devil
 // Kids dont learn C learn C++
 
-Enemy initEnemy(float x, float y, float speed, int width, int height, int type, int id, int agroRangeBoxWidth, int agroRangeBoxHeight, bool isGrounded, float acceleration, float maxSpeed) {
+Enemy initEnemy(float x, float y, float speed, int width, int height, int type, int id, int agroRangeBoxWidth, int agroRangeBoxHeight, bool isGrounded, float acceleration, float maxSpeed, float reloadSpeed) {
     Enemy enemy;
     enemy.x = x;
     enemy.y = y;
@@ -27,13 +27,15 @@ Enemy initEnemy(float x, float y, float speed, int width, int height, int type, 
         enemy.agroRangeBoxWidth = agroRangeBoxWidth;
         enemy.agroRangeBoxHeight = agroRangeBoxHeight;
     } else if (type == 1) { // RANGED
-        enemy.agroRangeBoxWidth = agroRangeBoxWidth * 1.5f; // Ranged enemies have larger agro range
-        enemy.agroRangeBoxHeight = agroRangeBoxHeight * 1.5f;
+        enemy.agroRangeBoxWidth = (int)(agroRangeBoxWidth * 1.5f); // Ranged enemies have larger agro range
+        enemy.agroRangeBoxHeight = (int)(agroRangeBoxHeight * 1.5f);
     }
 
     enemy.isGrounded = isGrounded;
     enemy.acceleration = acceleration;
     enemy.maxSpeed = maxSpeed;
+    enemy.reloadSpeed = reloadSpeed;
+    enemy.reloadTimer = 0.0f;
     return enemy;
 }
 
@@ -70,6 +72,8 @@ void generateEnemies(Enemies* enemies, Pillars* pillars) {
             int agroWidth = 0;
             int agroHeight = 0;
 
+            float reloadSpeed = 1.0f; // Default reload speed
+
             if (type == 0) { // MELEE
                 acceleration = 2500.0f;
                 maxSpeed = 600.0f;
@@ -80,9 +84,10 @@ void generateEnemies(Enemies* enemies, Pillars* pillars) {
                 maxSpeed = 400.0f;
                 agroWidth = 3000; // Ranged enemies have larger agro range to compensate for not chasing as aggressively
                 agroHeight = 2000;
+                reloadSpeed = 1.5f; // Ranged enemies shoot every 1.5 seconds
             }
 
-            Enemy newEnemy = initEnemy(x, y, 100.0f, 50, 50, type, i, agroWidth, agroHeight, false, acceleration, maxSpeed);
+            Enemy newEnemy = initEnemy(x, y, 100.0f, 50, 50, type, i, agroWidth, agroHeight, false, acceleration, maxSpeed, reloadSpeed);
             addEnemy(enemies, &newEnemy);
             totalSpawns++;
         } else {
@@ -329,6 +334,8 @@ void initRangedEnemyBullets(RangedEnemyBullets *bullets) {
 }
 
 void enemyShoot(Enemy *enemy, RangedEnemyBullets* bullets, Player *player) {
+    if (enemy->reloadTimer > 0) return;
+
     RangedEnemyBullet bullet;
     bullet.x = enemy->x;
     bullet.y = enemy->y;
@@ -350,6 +357,7 @@ void enemyShoot(Enemy *enemy, RangedEnemyBullets* bullets, Player *player) {
     }
     
     dyn_arr_push_back(bullets, &bullet);
+    enemy->reloadTimer = enemy->reloadSpeed;
 }
 
 void updateBullets(RangedEnemyBullets* bullets) {
@@ -367,6 +375,9 @@ void updateEnemies(Enemies *enemies, Pillars *pillars, Player* player, RangedEne
         moveEnemyTowardsPlayer(e, player, pillars);
         handleEnemyGravity(e);
         handleEnemyCollisions(e, pillars);
+        if (e->reloadTimer > 0) {
+            e->reloadTimer -= deltaTime;
+        }
         if (e->type == 1) {
             enemyShoot(e, bullets, player);
         } // RANGED
