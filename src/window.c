@@ -23,6 +23,8 @@ void displayWindow(void) {
     initPillars(&pillars);
     Enemies enemies;
     initEnemies(&enemies);
+    RangedEnemyBullets bullets;
+    initRangedEnemyBullets(&bullets);
 
     Pillar initialPillar = initPillar(850.0f, 850.0f, -200.0f, 500.0f);
     
@@ -51,7 +53,8 @@ void displayWindow(void) {
         BeginMode2D(camera);
         
         updatePlayer(&player, &pillars);
-        updateEnemies(&enemies, &pillars, &player);
+        updateEnemies(&enemies, &pillars, &player, &bullets);
+        updateBullets(&bullets);
          
         displayEnemies(&enemies);
         displayPillars(&pillars);

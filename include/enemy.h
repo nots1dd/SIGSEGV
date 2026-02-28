@@ -45,7 +45,7 @@ void displayEnemies(Enemies *enemies);
 void freeEnemies(Enemies *enemies);
 void freeEnemy(Enemies *enemies, int id);
 
-void updateEnemies(Enemies *enemies, Pillars *pillars, Player* player, RangedEnemyBullets bullet);
+void updateEnemies(Enemies *enemies, Pillars *pillars, Player* player, RangedEnemyBullets* bullets);
 
 void moveEnemyTowardsPlayer(Enemy *enemy, Player *player, Pillars *pillars);
 void enemyJump(Enemy *enemy);

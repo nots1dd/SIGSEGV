@@ -361,14 +361,14 @@ void updateBullets(RangedEnemyBullets* bullets) {
     }
 }
 
-void updateEnemies(Enemies *enemies, Pillars *pillars, Player* player, RangedEnemyBullets bullet) {
+void updateEnemies(Enemies *enemies, Pillars *pillars, Player* player, RangedEnemyBullets* bullets) {
     for (size_t i = 0; i < enemies->size; i++) {
         Enemy* e = dyn_arr_get(enemies, i);
         moveEnemyTowardsPlayer(e, player, pillars);
         handleEnemyGravity(e);
         handleEnemyCollisions(e, pillars);
         if (e->type == 1) {
-            enemyShoot(e, bullet);
+            enemyShoot(e, bullets, player);
         } // RANGED
     }
 }
