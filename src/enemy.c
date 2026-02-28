@@ -11,7 +11,7 @@
 // Dont even get me started on typedef structs they are the devil
 // Kids dont learn C learn C++
 
-Enemy initEnemy(float x, float y, float speed, int width, int height, int type, int id, int agroRangeBoxWidth, int agroRangeBoxHeight, bool isGrounded, float acceleration, float maxSpeed, float reloadSpeed) {
+Enemy initEnemy(float x, float y, float speed, int width, int height, int type, int id, int agroRangeBoxWidth, int agroRangeBoxHeight, bool isGrounded, float acceleration, float maxSpeed, float reloadSpeed, bool isFleeing) {
     Enemy enemy;
     enemy.x = x;
     enemy.y = y;
@@ -36,6 +36,7 @@ Enemy initEnemy(float x, float y, float speed, int width, int height, int type, 
     enemy.maxSpeed = maxSpeed;
     enemy.reloadSpeed = reloadSpeed;
     enemy.reloadTimer = 0.0f;
+    enemy.isFleeing = isFleeing;
     return enemy;
 }
 
@@ -77,17 +78,17 @@ void generateEnemies(Enemies* enemies, Pillars* pillars) {
             if (type == 0) { // MELEE
                 acceleration = 2500.0f;
                 maxSpeed = 600.0f;
-                agroWidth = 2400; // Wide enough to cover most of the screen horizontally, but not too wide to be unfair
+                agroWidth = 1200; // Wide enough to cover most of the screen horizontally, but not too wide to be unfair
                 agroHeight = 1600; // Tall enough to cover vertical space, but not too tall to be unfair
             } else if (type == 1) { // RANGED
                 acceleration = 2000.0f;
                 maxSpeed = 400.0f;
-                agroWidth = 3000; // Ranged enemies have larger agro range to compensate for not chasing as aggressively
+                agroWidth = 1200; // Ranged enemies have larger agro range to compensate for not chasing as aggressively
                 agroHeight = 2000;
                 reloadSpeed = 1.5f; // Ranged enemies shoot every 1.5 seconds
             }
 
-            Enemy newEnemy = initEnemy(x, y, 100.0f, 50, 50, type, i, agroWidth, agroHeight, false, acceleration, maxSpeed, reloadSpeed);
+            Enemy newEnemy = initEnemy(x, y, 100.0f, 50, 50, type, i, agroWidth, agroHeight, false, acceleration, maxSpeed, reloadSpeed, false);
             addEnemy(enemies, &newEnemy);
             totalSpawns++;
         } else {
@@ -143,7 +144,7 @@ void moveEnemyTowardsPlayer(Enemy* enemy, Player* player, Pillars* pillars) {
     if (isColliding(agroX, agroY, enemy->agroRangeBoxWidth, enemy->agroRangeBoxHeight,
                     player->x, player->y, player->width, player->height)) {
         
-        bool flee = false;
+        enemy->isFleeing = false;
         
         // Ranged enemies flee if player is in the inner 50% of the agro box
         if (enemy->type == RANGED) {
@@ -154,7 +155,7 @@ void moveEnemyTowardsPlayer(Enemy* enemy, Player* player, Pillars* pillars) {
             
             if (isColliding(innerX, innerY, (int)innerWidth, (int)innerHeight,
                             player->x, player->y, player->width, player->height)) {
-                flee = true;
+                enemy->isFleeing = true;
             }
         }
 
@@ -167,7 +168,7 @@ void moveEnemyTowardsPlayer(Enemy* enemy, Player* player, Pillars* pillars) {
                 enemy->velocityX += enemy->acceleration * deltaTime;
             }
         } else if (enemy->type == RANGED) {
-            if (flee) {
+            if (enemy->isFleeing) {
                 // Ranged flees within inner agro box
                 if (player->x < enemy->x) {
                     enemy->velocityX += enemy->acceleration * deltaTime;
@@ -369,17 +370,38 @@ void updateBullets(RangedEnemyBullets* bullets) {
     }
 }
 
+void freeRangedEnemyBullets(RangedEnemyBullets *bullets) {
+    dyn_arr_free(bullets);
+}
+
 void updateEnemies(Enemies *enemies, Pillars *pillars, Player* player, RangedEnemyBullets* bullets) {
     for (size_t i = 0; i < enemies->size; i++) {
         Enemy* e = dyn_arr_get(enemies, i);
+
         moveEnemyTowardsPlayer(e, player, pillars);
         handleEnemyGravity(e);
         handleEnemyCollisions(e, pillars);
+
         if (e->reloadTimer > 0) {
             e->reloadTimer -= deltaTime;
         }
-        if (e->type == 1) {
-            enemyShoot(e, bullets, player);
-        } // RANGED
+
+        if (e->type == RANGED) {
+            float cx = e->x + e->width / 2.0f;
+            float cy = e->y + e->height / 2.0f;
+
+            float agroX = cx - e->agroRangeBoxWidth / 2.0f;
+            float agroY = cy - e->agroRangeBoxHeight / 2.0f;
+
+            if (!e->isFleeing &&
+                isColliding(agroX, agroY,
+                            e->agroRangeBoxWidth,
+                            e->agroRangeBoxHeight,
+                            player->x, player->y,
+                            player->width, player->height)) {
+
+                enemyShoot(e, bullets, player);
+            }
+        }
     }
 }

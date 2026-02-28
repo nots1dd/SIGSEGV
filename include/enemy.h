@@ -21,6 +21,7 @@ typedef struct Enemy {
   int agroRangeBoxWidth;
   int agroRangeBoxHeight;
   bool isGrounded;
+  bool isFleeing;
   enum { MELEE = 0, RANGED = 1 } type;
 } Enemy;
 
@@ -39,7 +40,7 @@ typedef dyn_arr(RangedEnemyBullet) RangedEnemyBullets;
 
 Enemy initEnemy(float x, float y, float speed, int width, int height, int type,
                 int id, int agroRangeBoxWidth, int agroRangeBoxHeight,
-                bool isGrounded, float acceleration, float maxSpeed, float reloadSpeed);
+                bool isGrounded, float acceleration, float maxSpeed, float reloadSpeed, bool isFleeing);
 void initEnemies(Enemies *enemies);
 void addEnemy(Enemies *enemies, Enemy *enemy);
 void generateEnemies(Enemies *enemies, Pillars *pillars);
@@ -59,4 +60,5 @@ RangedEnemyBullet initEnemyBullet(float x, float y, float velocityX,
                                   float velocityY, float targetX, float targetY,
                                   float speed);
 void initRangedEnemyBullets(RangedEnemyBullets *bullets);
+void freeRangedEnemyBullets(RangedEnemyBullets *bullets);
 void updateBullets(RangedEnemyBullets *bullets);
