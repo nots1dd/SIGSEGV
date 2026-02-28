@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.5...4.2.1)
+cmake_minimum_required(VERSION 3.10...3.30)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 project(SIGSEGV LANGUAGES C)
 
